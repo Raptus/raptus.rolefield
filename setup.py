@@ -6,7 +6,7 @@ version = '1.0b1'
 setup(name='raptus.rolefield',
       version=version,
       description="Provides two archetypes fields which assign local roles to one or multiple users",
-      long_description=open("README.txt").read() + "\n" +
+      long_description=open("README.rst").read() + "\n" +
                        open(os.path.join("docs", "HISTORY.txt")).read(),
       # Get more strings from http://www.python.org/pypi?%3Aaction=list_classifiers
       classifiers=[
@@ -16,7 +16,7 @@ setup(name='raptus.rolefield',
       keywords='',
       author='Raptus AG',
       author_email='dev@raptus.com',
-      url='https://svn.plone.org/svn/collective/raptus.rolefield',
+      url='https://github.com/Raptus/raptus.rolefield',
       license='GPL',
       packages=find_packages(exclude=['ez_setup']),
       namespace_packages=['raptus'],
