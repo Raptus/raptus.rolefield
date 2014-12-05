@@ -114,15 +114,18 @@ class MultiRoleField(LinesField):
 
     security.declarePublic('getDefault')
     def getDefault(self, instance):
+        baseInstance = instance
         if self.default_acquired:
-            role = type(self.default_acquired) in STRING_TYPES and self.default_acquired or self.role
-            users = instance.acl_users._getAllLocalRoles(instance.getParentNode())
+            defaultRole = type(self.default_acquired) in STRING_TYPES and self.default_acquired or self.role
             default = []
-            for user, roles in users.items():
-                if role in roles:
-                    default.append(user)
-            return default
-        return Field.getDefault(self, instance)
+            while not INavigationRoot.providedBy(instance):
+                if not isinstance(instance, TempFolder):
+                    for user, roles in instance.get_local_roles():
+                        if defaultRole in roles:
+                            default.append(user)
+                    return default
+                instance = aq_parent(instance)
+        return Field.getDefault(self, baseInstance)
 
     security.declarePrivate('get')
     def get(self, instance, **kwargs):

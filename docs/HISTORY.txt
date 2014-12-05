@@ -4,7 +4,7 @@ Changelog
 1.2 (unreleased)
 ----------------
 
-- Nothing changed yet.
+* adopt default role aquisition for MultiRoleField
 
 
 1.1 (2014-12-05)
