@@ -1,14 +1,17 @@
-from Acquisition import aq_base, aq_get
+from Acquisition import aq_base, aq_get, aq_parent
 
 from AccessControl import ClassSecurityInfo
 
 from zope.interface import implements
 from zope.i18n import translate
 
+from plone.app.layout.navigation.interfaces import INavigationRoot
+
 from Products.Archetypes.Registry import registerField
 from Products.Archetypes.Registry import registerPropertyType
 from Products.Archetypes.Field import Field, StringField, LinesField, STRING_TYPES, decode
 from Products.CMFCore.utils import getToolByName
+from Products.CMFPlone.FactoryTool import TempFolder
 
 from raptus.rolefield import _
 
@@ -32,13 +35,16 @@ class RoleField(StringField):
 
     security.declarePublic('getDefault')
     def getDefault(self, instance):
+        baseInstance = instance
         if self.default_acquired:
-            role = type(self.default_acquired) in STRING_TYPES and self.default_acquired or self.role
-            users = instance.acl_users._getAllLocalRoles(instance.getParentNode())
-            for user, roles in users.items():
-                if role in roles:
-                    return user
-        return Field.getDefault(self, instance)
+            defaultRole = type(self.default_acquired) in STRING_TYPES and self.default_acquired or self.role
+            while not INavigationRoot.providedBy(instance):
+                if not isinstance(instance, TempFolder):
+                    for user, roles in instance.get_local_roles():
+                        if defaultRole in roles:
+                            return user
+                instance = aq_parent(instance)
+        return Field.getDefault(self, baseInstance)
 
     security.declarePrivate('get')
     def get(self, instance, **kwargs):
@@ -94,7 +100,7 @@ class MultiRoleField(LinesField):
         implements(ILinesField)
     except ImportError:
         __implements__ = LinesField.__implements__
-    
+
     _properties = LinesField._properties.copy()
     _properties.update({
         'type' : 'multirole',
@@ -126,7 +132,7 @@ class MultiRoleField(LinesField):
     security.declarePrivate('getRaw')
     def getRaw(self, instance, **kwargs):
         return self.get(instance, **kwargs)
-    
+
     security.declarePrivate('set')
     def set(self, instance, value, **kwargs):
         if not self.acquire and not bool(getattr(aq_base(instance), '__ac_local_roles_block__', False)):
